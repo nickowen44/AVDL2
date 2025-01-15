@@ -14,9 +14,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         dialog.cpp \
+        serialconnect.cpp \
         strobethread.cpp
 
 HEADERS  += dialog.h \
+    serialconnect.h \
     strobethread.h
 
 FORMS    += dialog.ui

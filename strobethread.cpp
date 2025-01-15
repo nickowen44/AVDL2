@@ -18,7 +18,7 @@ void StrobeThread::run()
             QMutex mutex;
             mutex.lock();
             if(this->Stop) break;
-            qDebug()  << i;
+            //qDebug()  << i;
             mutex.unlock();
             emit FlashEstopN(i);
             this->msleep(100);

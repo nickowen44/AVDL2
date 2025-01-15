@@ -7,12 +7,16 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include "strobethread.h"
+#include "serialconnect.h"
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Dialog)
 {
     ui->setupUi(this);
+
+    sAVDLser = new SerialConnect();
+
 
 
     sThread = new StrobeThread(this); // thread is created on heap to prevent it goes out of scope
@@ -567,7 +571,7 @@ void Dialog::FlashEstop(int number)
 QPixmap RedEstop ("C:/Users/user/Downloads/Qt-Temperature-Sensor-master/Qt-Temperature-Sensor-master/DS18B20_Qt/emergency-stop-red.png");
 
     if (number<5){
-    qDebug() << "greater than 5";
+   // qDebug() << "greater than 5";
 
         ui->RES_ESTOP_RED_2->setHidden(false);
 
@@ -575,7 +579,7 @@ QPixmap RedEstop ("C:/Users/user/Downloads/Qt-Temperature-Sensor-master/Qt-Tempe
     }
     else
     {
-        qDebug() << "less than 5";
+       // qDebug() << "less than 5";
 
         ui->RES_ESTOP_RED_2->setHidden(true);
     }
@@ -592,5 +596,15 @@ void Dialog::on_pushButton_clicked()
     sThread->wait();
 
     qApp->exit();
+}
+
+
+void Dialog::on_pushButton_2_clicked()
+{
+    sAVDLser->readSerial();
+
+   sAVDLser->run();
+
+   // sAVDLser->close();
 }
 

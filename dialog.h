@@ -5,6 +5,8 @@
 #include <QSerialPort>
 #include <QByteArray>
 #include "strobethread.h"
+#include "serialconnect.h"
+
 
 namespace Ui {
 class Dialog;
@@ -18,6 +20,7 @@ public:
     explicit Dialog(QWidget *parent = 0);
     ~Dialog();
     StrobeThread *sThread;
+    SerialConnect *sAVDLser;
 
 
 private slots:
@@ -36,13 +39,12 @@ private slots:
     void UpdateAutonomousMission(QString);
     void UpdateEbsState(QString);
     void FlashEstop(int number);
-
-
     void on_pushButton_clicked();
+
+    void on_pushButton_2_clicked();
 
 private:
     Ui::Dialog *ui;
-
     QSerialPort *arduino;
     static const quint16 arduino_uno_vendor_id = 4292; //4292
     static const quint16 arduino_uno_product_id = 60000; //6000
