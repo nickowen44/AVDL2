@@ -7,7 +7,8 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include "strobethread.h"
-#include "serialconnect.h"
+//#include "serialconnect.h"
+#include "serialportfacade.h"
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -15,15 +16,19 @@ Dialog::Dialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    sAVDLser = new SerialConnect();
+   // sAVDLser = new SerialConnect();
+
+    m_serial = new QSerialPort(this);
+
+
+    qInfo() << this << Q_FUNC_INFO << QThread::currentThread();
 
 
 
     sThread = new StrobeThread(this); // thread is created on heap to prevent it goes out of scope
     connect(sThread,SIGNAL(FlashEstopN(int)),this, SLOT(FlashEstop(int)));
-    //connect(sThread, &StrobeThread::finished, sThread, &QThread::quit);
-   // connect(sThread, &StrobeThread::finished, sThread, &QObject::deleteLater);
 
+    qInfo() << this << Q_FUNC_INFO << QThread::currentThread();
 
     //Started
     sThread->Stop=false;
@@ -52,64 +57,11 @@ Dialog::Dialog(QWidget *parent) :
     parsed_data = "";
     temperature_value = 0.0;
 
-    /*
-     *  Testing code, prints the description, vendor id, and product id of all ports.
-     *  Used it to determine the values for the arduino uno.
-     *
-     *
-    qDebug() << "Number of ports: " << QSerialPortInfo::availablePorts().length() << "\n";
-    foreach(const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts()){
-        qDebug() << "Description: " << serialPortInfo.description() << "\n";
-        qDebug() << "Has vendor id?: " << serialPortInfo.hasVendorIdentifier() << "\n";
-        qDebug() << "Vendor ID: " << serialPortInfo.vendorIdentifier() << "\n";
-        qDebug() << "Has product id?: " << serialPortInfo.hasProductIdentifier() << "\n";
-        qDebug() << "Product ID: " << serialPortInfo.productIdentifier() << "\n";
-    }
-    */
 
 
-    /*
-     *   Identify the port the arduino uno is on.
-     */
-    bool arduino_is_available = false;
-    QString arduino_uno_port_name;
-    //
-    //  For each available serial port
-    foreach(const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts()){
-        //  check if the serialport has both a product identifier and a vendor identifier
-        if(serialPortInfo.hasProductIdentifier() && serialPortInfo.hasVendorIdentifier()){
-            //  check if the product ID and the vendor ID match those of the arduino uno
-           // qDebug << serialPortInfo.hasProductIdentifier();
-            if((serialPortInfo.productIdentifier() == arduino_uno_product_id)
-                    && (serialPortInfo.vendorIdentifier() == arduino_uno_vendor_id)){
-                arduino_is_available = true; //    arduino uno is available on this port
 
-                arduino_uno_port_name = serialPortInfo.portName();
-                //arduino_uno_port_name = "COM7";
 
-            }
-        }
-    }
 
-    /*
-     *  Open and configure the arduino port if available
-     */
-    if(arduino_is_available){
-        qDebug() << "Found the arduino port...\n";
-        //arduino->setPortName(arduino_uno_port_name);
-        arduino->setPortName("COM4");
-
-        arduino->open(QSerialPort::ReadOnly);
-        arduino->setBaudRate(QSerialPort::Baud115200);
-        arduino->setDataBits(QSerialPort::Data8);
-        arduino->setFlowControl(QSerialPort::NoFlowControl);
-        arduino->setParity(QSerialPort::NoParity);
-        arduino->setStopBits(QSerialPort::OneStop);
-        QObject::connect(arduino, SIGNAL(readyRead()), this, SLOT(readSerial()));
-    }else{
-        qDebug() << "Couldn't find the correct port for the arduino.\n";
-        QMessageBox::information(this, "Serial Port Error", "Couldn't open serial port to arduino.");
-    }
 }
 
 Dialog::~Dialog()
@@ -120,22 +72,33 @@ Dialog::~Dialog()
     delete ui;
 }
 
-void Dialog::readSerial()
+void Dialog::readSerial(QByteArray Sstring)
 {
+
+    // serialData = arduino->readAll();
+    //serialData=printReadData;
+    //qDebug() << serialData;
+    qDebug() << "PARSING DATA";
+    serialData=Sstring;
+    qDebug() << serialData;
     /*
      * readyRead() doesn't guarantee that the entire message will be received all at once.
      * The message can arrive split into parts.  Need to buffer the serial data and then parse for the temperature value.
      *
      */
+    QList<QByteArray> lines = Sstring.replace("\r\n", "\n").split('\n');
+    for(const auto &line : lines) {
+        readSerialLine(line);
+    }
+
+}
+void Dialog::readSerialLine(const QByteArray& serialData) {
 
 
-    serialData = arduino->readAll();
 
-    qDebug() << serialData;
+
     ui->Console->document()->setPlainText(serialData);
-
-
-    QRegularExpression re("(ID=?)+(\\w\\d\\d)");
+    QRegularExpression re("(ID=)+(\\w\\d\\d)");
     QRegularExpressionMatch match = re.match(serialData);
     if (match.hasMatch()) {
          serialBuffer = match.captured(0); // matched == "ID=A##"
@@ -146,7 +109,7 @@ void Dialog::readSerial()
     qDebug() << serialBuffer;
     serialBuffer="";
 
-    QRegularExpression re2("(RES=?)+(\\d)");
+    QRegularExpression re2("(RES=)+(\\d)");
     QRegularExpressionMatch match2 = re2.match(serialData);
     if (match2.hasMatch()) {
         serialBuffer = match2.captured(0); // matched == "RES=#"
@@ -156,7 +119,7 @@ void Dialog::readSerial()
     qDebug() << serialBuffer;
     serialBuffer="";
 
-    QRegularExpression re3("(MMA=?)+(\\d\\d\\d|\\d\\d|\\d)");
+    QRegularExpression re3("(MMA=)+(\\d\\d\\d|\\d\\d|\\d)");
     QRegularExpressionMatch match3 = re3.match(serialData);
     if (match3.hasMatch()) {
         serialBuffer = match3.captured(0); // matched == "MMA=###"
@@ -167,9 +130,9 @@ void Dialog::readSerial()
     serialBuffer="";
 
 
-    QRegularExpression re4("(MMT=?)+(\\d\\d\\d|\\d\\d|\\d)");
+    QRegularExpression re4("(MMT=)+(\\d\\d\\d|\\d\\d|\\d)");
     QRegularExpressionMatch match4 = re4.match(serialData);
-    if (match3.hasMatch()) {
+    if (match4.hasMatch()) {
         serialBuffer = match4.captured(0); // matched == "MMA=###"
         QStringList buffer_split = serialBuffer.split("="); //  split the serialBuffer string, parsing with '=' as the separator
         Dialog::UpdateMmmTarget(buffer_split[1]);
@@ -178,7 +141,7 @@ void Dialog::readSerial()
     serialBuffer="";
 
 
-    QRegularExpression re5("(AST=?)+(\\d)");
+    QRegularExpression re5("(AST=)+(\\d)");
     QRegularExpressionMatch match5 = re5.match(serialData);
     if (match5.hasMatch()) {
         serialBuffer = match5.captured(0); // matched == "AST=#"
@@ -188,7 +151,7 @@ void Dialog::readSerial()
     qDebug() << serialBuffer;
     serialBuffer="";
 
-    QRegularExpression re6("(SA=?)+(\\d\\d\\d|\\d\\d|\\d)");
+    QRegularExpression re6("(SA=)+(\\d\\d\\d|\\d\\d|\\d)");
     QRegularExpressionMatch match6 = re6.match(serialData);
     if (match6.hasMatch()) {
         serialBuffer = match6.captured(0); // matched == "SA=###"
@@ -199,7 +162,7 @@ void Dialog::readSerial()
     qDebug() << serialBuffer;
     serialBuffer="";
 
-    QRegularExpression re7("(ST=?)+(\\d\\d\\d|\\d\\d|\\d)");
+    QRegularExpression re7("(ST=)+(\\d\\d\\d|\\d\\d|\\d)");
     QRegularExpressionMatch match7 = re7.match(serialData);
     if (match7.hasMatch()) {
         serialBuffer = match7.captured(0); // matched == "S&=###"
@@ -210,7 +173,7 @@ void Dialog::readSerial()
     qDebug() << serialBuffer;
     serialBuffer="";
 
-    QRegularExpression re8("(BRT=?)+(\\d\\d\\d|\\d\\d|\\d)");
+    QRegularExpression re8("(BRT=)+(\\d\\d\\d|\\d\\d|\\d)");
     QRegularExpressionMatch match8 = re8.match(serialData);
     if (match8.hasMatch()) {
         serialBuffer = match8.captured(0); // matched == "S&=###"
@@ -221,7 +184,7 @@ void Dialog::readSerial()
     qDebug() << serialBuffer;
     serialBuffer="";
 
-    QRegularExpression re9("(BRA=?)+(\\d\\d\\d|\\d\\d|\\d)");
+    QRegularExpression re9("(BRA=)+(\\d\\d\\d|\\d\\d|\\d)");
     QRegularExpressionMatch match9 = re9.match(serialData);
     if (match9.hasMatch()) {
         serialBuffer = match9.captured(0); // matched == "S&=###"
@@ -233,7 +196,7 @@ void Dialog::readSerial()
     serialBuffer="";
 
 
-    QRegularExpression re10("(STT=?)+(\\d\\d\\d|\\d\\d|\\d)");
+    QRegularExpression re10("(STT=)+(\\d\\d\\d|\\d\\d|\\d)");
     QRegularExpressionMatch match10 = re10.match(serialData);
     if (match10.hasMatch()) {
         serialBuffer = match10.captured(0); // matched == "S&=###"
@@ -244,7 +207,7 @@ void Dialog::readSerial()
     qDebug() << serialBuffer;
     serialBuffer="";
 
-    QRegularExpression re11("(STA=?)+(\\d\\d\\d|\\d\\d|\\d)");
+    QRegularExpression re11("(STA=)+(\\d\\d\\d|\\d\\d|\\d)");
     QRegularExpressionMatch match11 = re11.match(serialData);
     if (match11.hasMatch()) {
         serialBuffer = match11.captured(0); // matched == "S&=###"
@@ -256,7 +219,7 @@ void Dialog::readSerial()
     serialBuffer="";
 
 
-    QRegularExpression re12("(AMI=?)+(\\d)");
+    QRegularExpression re12("(AMI=)+(\\d)");
     QRegularExpressionMatch match12 = re12.match(serialData);
     if (match12.hasMatch()) {
         serialBuffer = match12.captured(0); // matched == "AST=#"
@@ -268,7 +231,7 @@ void Dialog::readSerial()
 
 
 
-    QRegularExpression re13("(EBS=?)+(\\d)");
+    QRegularExpression re13("(EBS=)+(\\d)");
     QRegularExpressionMatch match13 = re13.match(serialData);
     if (match13.hasMatch()) {
         serialBuffer = match13.captured(0); // matched == "AST=#"
@@ -601,10 +564,67 @@ void Dialog::on_pushButton_clicked()
 
 void Dialog::on_pushButton_2_clicked()
 {
-    sAVDLser->readSerial();
+   // sAVDLser->readSerial();
 
-   sAVDLser->run();
+   //sAVDLser->run();
 
    // sAVDLser->close();
+   openSerialPort();
 }
 
+
+
+
+void Dialog::openSerialPort()
+{
+
+    p.name="COM19";
+    p.baudRate=QSerialPort::Baud115200;
+    p.dataBits=QSerialPort::Data8;
+    p.parity=QSerialPort::NoParity;
+    p.stopBits=QSerialPort::OneStop;
+    p.flowControl=QSerialPort::NoFlowControl;
+
+    m_serial->setPortName(p.name);
+    m_serial->setBaudRate(p.baudRate);
+    m_serial->setDataBits(p.dataBits);
+    m_serial->setFlowControl(p.flowControl);
+    m_serial->setParity(p.parity);
+    m_serial->setStopBits(p.stopBits);
+
+    qInfo() << this << Q_FUNC_INFO << QThread::currentThread();
+
+            m_multithreadserial = new SerialPortFacade();
+            m_serialPortThread = new QThread();
+            m_multithreadserial->moveToThread(m_serialPortThread);
+            initMultiThreadingConnections();
+            m_serialPortThread->start();
+            m_serialPortThread->setObjectName("serial thread");
+            qInfo() << m_serialPortThread << Q_FUNC_INFO << QThread::currentThread();
+            qInfo() << sThread << Q_FUNC_INFO << QThread::currentThread();
+
+            emit openSerialPort_MT(p.name, p.baudRate, p.dataBits, p.parity, p.stopBits, p.flowControl);
+
+
+}
+
+
+
+// Initializes Multi-Threading signal/slot connections
+void Dialog::initMultiThreadingConnections()
+{
+    // Serial Port behavior specific connections
+    connect(this, &Dialog::openSerialPort_MT, m_multithreadserial, &SerialPortFacade::open);
+    connect(this, &Dialog::closeSerialPort_MT, m_multithreadserial, &SerialPortFacade::close, Qt::ConnectionType::BlockingQueuedConnection); // Blocking guarantees serial port has a chance to wrap everything up. Negligible blocking cost
+   // connect(m_console, &Console::getData, m_multithreadserial, &SerialPortFacade::write);
+    //connect(m_multithreadserial, &SerialPortFacade::printReadData,  this,  &Dialog::readSerial);
+
+    connect(m_multithreadserial,SIGNAL(printReadData(QByteArray)),this, SLOT(readSerial(QByteArray)));
+
+
+   // connect(m_multithreadserial, &SerialPortFacade::connectionChange, this, &MainWindow::handleConnectionChange);
+    // Thread specific connections. Ordering matters here.
+    connect(m_multithreadserial, &SerialPortFacade::endThread, m_serialPortThread, &QThread::quit, Qt::ConnectionType::DirectConnection); // DirectConnection forces the thread to quit instantly on signal emition
+    connect(m_multithreadserial, &SerialPortFacade::endThread, m_multithreadserial, &SerialPortFacade::deleteLater);
+    connect(m_serialPortThread, &QThread::finished, m_serialPortThread, &QThread::deleteLater);
+}

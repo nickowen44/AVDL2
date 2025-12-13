@@ -6,7 +6,7 @@
 #include <QByteArray>
 #include "strobethread.h"
 #include "serialconnect.h"
-
+#include "serialportfacade.h"
 
 namespace Ui {
 class Dialog;
@@ -21,10 +21,26 @@ public:
     ~Dialog();
     StrobeThread *sThread;
     SerialConnect *sAVDLser;
+    struct  {
+        QString name;
+        qint32 baudRate;
+        QString stringBaudRate;
+        QSerialPort::DataBits dataBits;
+        QString stringDataBits;
+        QSerialPort::Parity parity;
+        QString stringParity;
+        QSerialPort::StopBits stopBits;
+        QString stringStopBits;
+        QSerialPort::FlowControl flowControl;
+        QString stringFlowControl;
+        bool localEchoEnabled;
+        bool multithreading;
+    }p;
 
 
 private slots:
-    void readSerial();
+    void readSerial(QByteArray);
+    void readSerialLine(const QByteArray&);
     void UpdateCarID(QString);
     void UpdateRES(QString);
     void UpdateMMA(QString);
@@ -40,8 +56,9 @@ private slots:
     void UpdateEbsState(QString);
     void FlashEstop(int number);
     void on_pushButton_clicked();
-
     void on_pushButton_2_clicked();
+    void openSerialPort();
+    void initMultiThreadingConnections();
 
 private:
     Ui::Dialog *ui;
@@ -52,6 +69,22 @@ private:
     QString serialBuffer;
     QString parsed_data;
     double temperature_value;
+    QSerialPort *m_serial = nullptr;
+    // Multi-Threading members
+    QPointer<SerialPortFacade> m_multithreadserial = nullptr;
+    QPointer<QThread> m_serialPortThread = nullptr;
+
+
+signals:
+        void openSerialPort_MT(
+            const QString& portname,
+            const qint32 baudrate,
+            const QSerialPort::DataBits dbits,
+            const QSerialPort::Parity parity,
+            const QSerialPort::StopBits stopbits,
+            const QSerialPort::FlowControl flow);
+    void closeSerialPort_MT();
+
 };
 
 #endif // DIALOG_H
