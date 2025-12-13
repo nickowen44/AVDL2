@@ -81,6 +81,7 @@ void Dialog::readSerial(QByteArray Sstring)
     qDebug() << "PARSING DATA";
     serialData=Sstring;
     qDebug() << serialData;
+    ui->Console->document()->setPlainText(serialData);
     /*
      * readyRead() doesn't guarantee that the entire message will be received all at once.
      * The message can arrive split into parts.  Need to buffer the serial data and then parse for the temperature value.
@@ -97,7 +98,7 @@ void Dialog::readSerialLine(const QByteArray& serialData) {
 
 
 
-    ui->Console->document()->setPlainText(serialData);
+
     QRegularExpression re("(ID=)+(\\w\\d\\d)");
     QRegularExpressionMatch match = re.match(serialData);
     if (match.hasMatch()) {

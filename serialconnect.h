@@ -4,7 +4,8 @@
 #include <QObject>
 #include <QSerialPort>
 #include <QByteArray>
-//#include <QThread>
+#include <QThread>
+
 
 class SerialConnect
 {
@@ -13,9 +14,10 @@ class SerialConnect
 
 public:
     SerialConnect();
+
     //explicit SerialConnect(QObject *parent = nullptr);
     bool SerialSimulation = true; // true to enable simulated serial port, false to disable
-    QString SimulatedSerialAVDL_port_name = "COM4";
+    QString SimulatedSerialAVDL_port_name = "COM7";
     void run();
     bool Stop;
 

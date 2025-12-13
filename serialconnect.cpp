@@ -6,13 +6,6 @@
 #include <QtCore>
 
 
-/*
-SerialConnect::SerialConnect(QObject *parent) {
-     //: QThread{parent}
-}
-
-*/
-
 
 SerialConnect::SerialConnect() {
     //: QThread{parent}
@@ -63,8 +56,8 @@ void SerialConnect::readSerial()
                 && (serialPortInfo.vendorIdentifier() == SerialAVDL_vendor_id)){
                 SerialAVDL_is_available = true; //    SerialAVDL is available on this port
 
-                SerialAVDL_port_name = serialPortInfo.portName();
-                //SerialAVDL_port_name = "COM7";
+                //SerialAVDL_port_name = serialPortInfo.portName();
+                SerialAVDL_port_name = "COM19"; //location of avdl
 
             }
         }

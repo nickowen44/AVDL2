@@ -15,10 +15,12 @@ TEMPLATE = app
 SOURCES += main.cpp\
         dialog.cpp \
         serialconnect.cpp \
+        serialportfacade.cpp \
         strobethread.cpp
 
 HEADERS  += dialog.h \
     serialconnect.h \
+    serialportfacade.h \
     strobethread.h
 
 FORMS    += dialog.ui
