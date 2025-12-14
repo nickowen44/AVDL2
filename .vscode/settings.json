@@ -1,0 +1,16 @@
+{
+    "terminal.integrated.defaultProfile.windows": "QtBash",
+    "terminal.integrated.profiles.windows": {
+        "QtBash": {
+            "path": "${env:MSYS_ROOT}/usr/bin/bash.exe",
+            "args": [
+                "--login",
+                "-i",
+            ],
+            "env": {
+                "MSYSTEM": "MINGW64",
+                "CHERE_INVOKING": "1" // Start in the VSCode directory
+            }
+        }
+    }
+}

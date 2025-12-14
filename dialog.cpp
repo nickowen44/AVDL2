@@ -45,9 +45,9 @@ Dialog::Dialog(QWidget *parent) :
     ui->SA_Text_Actual->setPlainText("___");
 
 
-    QPixmap Background ("C:/Users/user/Downloads/Qt-Temperature-Sensor-master/Qt-Temperature-Sensor-master/DS18B20_Qt/Background.jpg");
+    QPixmap Background ("Background.jpg");
     ui->Background->setPixmap(Background);
-    QPixmap NUVO_LOGO ("C:/Users/user/Downloads/Qt-Temperature-Sensor-master/Qt-Temperature-Sensor-master/DS18B20_Qt/Nuvomotorsportlogo.png");
+    QPixmap NUVO_LOGO ("Nuvomotorsportlogo.png");
     ui->NUVO_LOGO->setPixmap(NUVO_LOGO);
 
 
@@ -289,7 +289,7 @@ void Dialog::UpdateRES(QString Res_Status)
     ui->RES_lcdNumber->display(Res_Status);
 
     if (Res_Status.toInt()==1){
-        QPixmap GreenEstop ("C:/Users/user/Downloads/Qt-Temperature-Sensor-master/Qt-Temperature-Sensor-master/DS18B20_Qt/emergency-stop-green.png");
+        QPixmap GreenEstop ("emergency-stop-green.png");
         ui->RES_ESTOP_RED->setPixmap(GreenEstop);
         ui->RES_ESTOP_RED_2->setPixmap(GreenEstop);
 
@@ -301,7 +301,7 @@ void Dialog::UpdateRES(QString Res_Status)
        // ui->RES_ESTOP_RED->setHidden(true);
         qDebug() << "ESTOP NOT - ACTIVATED";
         ui->Estop_Text->setPlainText("ESTOP ACTIVATED");
-        QPixmap RedEstop ("C:/Users/user/Downloads/Qt-Temperature-Sensor-master/Qt-Temperature-Sensor-master/DS18B20_Qt/emergency-stop-red.png");
+        QPixmap RedEstop ("emergency-stop-red.png");
         ui->RES_ESTOP_RED->setPixmap(RedEstop);
         ui->RES_ESTOP_RED_2->setPixmap(RedEstop); // Big Estop
 
@@ -532,7 +532,7 @@ void Dialog::FlashEstop(int number)
     //  Flash the Estop pixmaps
 
 
-QPixmap RedEstop ("C:/Users/user/Downloads/Qt-Temperature-Sensor-master/Qt-Temperature-Sensor-master/DS18B20_Qt/emergency-stop-red.png");
+QPixmap RedEstop ("emergency-stop-red.png");
 
     if (number<5){
    // qDebug() << "greater than 5";
