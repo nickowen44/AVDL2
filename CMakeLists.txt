@@ -13,19 +13,18 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets SerialPort)
 qt_standard_project_setup()
 
 qt_add_executable("${PROJECT_NAME}"
-    dialog.ui
-    main.cpp
-    dialog.cpp
-    serialconnect.cpp
-    serialportfacade.cpp
-    strobethread.cpp
+    src/dialog.ui
+    src/main.cpp
+    src/dialog.cpp
+    src/serial.cpp
+    src/datastream.cpp
 )
 
 target_link_libraries("${PROJECT_NAME}" PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::SerialPort)
 
 set_target_properties("${PROJECT_NAME}" PROPERTIES
     WIN32_EXECUTABLE ON
-    MACOSX_BUNDLE ON
+    MACOSX_BUNDLE ONa
 )
 
 

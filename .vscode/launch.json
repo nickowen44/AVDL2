@@ -9,10 +9,16 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/AVDL2.exe",
-            "args": [],
+            "args": [
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
-            "environment": [],
+            "environment": [
+                {
+                    "name": "PATH",
+                    "value": "${env:Qt6_ROOT}\\bin;${env:PATH}"
+                }
+            ],
             "externalConsole": false,
             "MIMode": "gdb",
             "miDebuggerPath": "${env:MSYS_ROOT}\\mingw64\\bin\\gdb.exe",

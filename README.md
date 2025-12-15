@@ -18,3 +18,5 @@ If you want to use VSCode, follow these steps
 - Configure cmake: `cmake -B build . -DCMAKE_BUILD_TYPE=Debug`
 - Build cmake: `cmake --build build`
 - Ensure the required DLL's are copied over: `$Qt6_ROOT/bin/windeployqt.exe build/YourAppName.exe`
+
+Modify `/etc/nsswitch.conf` in your MSYS environment and change the relevant line to `db_home: windows` to make MSYS use your Windows home directory, as the MSYS home directory (e.g. for Conda, or similar)
