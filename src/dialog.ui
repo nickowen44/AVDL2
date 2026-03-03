@@ -1605,7 +1605,7 @@
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="btnQuit">
    <property name="geometry">
     <rect>
      <x>1334</x>
@@ -1624,7 +1624,7 @@
     <string>QUIT</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_2">
+  <widget class="QPushButton" name="btnSerialConnect">
    <property name="geometry">
     <rect>
      <x>1060</x>
@@ -1641,6 +1641,16 @@
    </property>
    <property name="text">
     <string>Serial Connect</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="cmbSerialPorts">
+   <property name="geometry">
+    <rect>
+     <x>1060</x>
+     <y>820</y>
+     <width>241</width>
+     <height>26</height>
+    </rect>
    </property>
   </widget>
   <zorder>Background</zorder>
@@ -1664,8 +1674,9 @@
   <zorder>Console</zorder>
   <zorder>NUVO_LOGO</zorder>
   <zorder>RES_ESTOP_RED_2</zorder>
-  <zorder>pushButton</zorder>
-  <zorder>pushButton_2</zorder>
+  <zorder>btnQuit</zorder>
+  <zorder>btnSerialConnect</zorder>
+  <zorder>cmbSerialPorts</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
